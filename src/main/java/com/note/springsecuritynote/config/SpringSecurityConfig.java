@@ -3,6 +3,7 @@ package com.note.springsecuritynote.config;
 import com.note.springsecuritynote.jwt.JwtAuthenticationFilter;
 import com.note.springsecuritynote.jwt.JwtAuthorizationFilter;
 import com.note.springsecuritynote.jwt.JwtProperties;
+
 import com.note.springsecuritynote.user.User;
 import com.note.springsecuritynote.user.UserRepository;
 import com.note.springsecuritynote.user.UserService;
@@ -37,9 +38,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         // basic authentication
         http.httpBasic().disable(); // basic authentication filter 비활성화
         // csrf
-        http.csrf().disable();
+        http.csrf().disable();//csrf(위조된 페이지로 사기치느것) 공격 방어 토큰
         // remember-me
-        http.rememberMe().disable();
+        http.rememberMe();
         // stateless
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -51,7 +52,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 new JwtAuthorizationFilter(userRepository),
                 BasicAuthenticationFilter.class
         );
-        // authorization
+        // authorization경로별 설정
         http.authorizeRequests()
                 // /와 /home은 모두에게 허용
                 .antMatchers("/", "/home", "/signup").permitAll()
@@ -61,10 +62,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/notice").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/notice").hasRole("ADMIN")
                 .anyRequest().authenticated();
-        // login
+        // login 후 url이동
         http.formLogin()
                 .loginPage("/login")
-                .defaultSuccessUrl("/")
+                .defaultSuccessUrl("/")//일로이동
                 .permitAll(); // 모두 허용
         // logout
         http.logout()
@@ -76,7 +77,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        // 정적 리소스 spring security 대상에서 제외
+        // 정적 리소스 spring security 대상에서 제외 static 폴더아래
 //        web.ignoring().antMatchers("/images/**", "/css/**"); // 아래 코드와 같은 코드입니다.
         web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
