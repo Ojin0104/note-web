@@ -2,7 +2,7 @@ package com.note.springsecuritynote.config;
 
 import com.note.springsecuritynote.note.NoteService;
 import com.note.springsecuritynote.notice.NoticeService;
-import com.note.springsecuritynote.user.User;
+import com.note.springsecuritynote.user.Member;
 import com.note.springsecuritynote.user.UserService;
 import lombok.RequiredArgsConstructor;
 
@@ -27,11 +27,11 @@ public class InitializeDefaultConfig {
      */
     @Bean
     public void initializeDefaultUser() {
-        User user = userService.signup("user", "user");
-        noteService.saveNote(user, "테스트", "테스트입니다.");
-        noteService.saveNote(user, "테스트2", "테스트2입니다.");
-        noteService.saveNote(user, "테스트3", "테스트3입니다.");
-        noteService.saveNote(user, "여름 여행계획", "여름 여행계획 작성중...");
+        Member member = userService.signup("user", "user");
+        noteService.saveNote(member, "테스트", "테스트입니다.");
+        noteService.saveNote(member, "테스트2", "테스트2입니다.");
+        noteService.saveNote(member, "테스트3", "테스트3입니다.");
+        noteService.saveNote(member, "여름 여행계획", "여름 여행계획 작성중...");
     }
 
     /**

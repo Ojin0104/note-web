@@ -16,7 +16,7 @@
         <p style="margin: 10px 0px;">
           <strong th:text="${note.title}"></strong>
           Posted by
-          <strong th:if="${note.user}" th:text="${note.user.username}"></strong> on
+          <strong th:if="${note.member}" th:text="${note.member.username}"></strong> on
           <strong th:text="${#temporals.format(note.createdAt, 'yyyy-MM-dd')}"></strong>
         </p>
       </div>

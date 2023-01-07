@@ -4,7 +4,7 @@ import com.note.springsecuritynote.jwt.JwtAuthenticationFilter;
 import com.note.springsecuritynote.jwt.JwtAuthorizationFilter;
 import com.note.springsecuritynote.jwt.JwtProperties;
 
-import com.note.springsecuritynote.user.User;
+import com.note.springsecuritynote.user.Member;
 import com.note.springsecuritynote.user.UserRepository;
 import com.note.springsecuritynote.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         // csrf
         http.csrf().disable();//csrf(위조된 페이지로 사기치느것) 공격 방어 토큰
         // remember-me
-        http.rememberMe();
+        http.rememberMe().disable();
         // stateless
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -55,7 +55,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         // authorization경로별 설정
         http.authorizeRequests()
                 // /와 /home은 모두에게 허용
-                .antMatchers("/", "/home", "/signup").permitAll()
+                .antMatchers("/", "/home", "/signup","/login").permitAll()
                 // hello 페이지는 USER 롤을 가진 유저에게만 허용
                 .antMatchers("/note").hasRole("USER")
                 .antMatchers("/admin").hasRole("ADMIN")
@@ -63,10 +63,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/notice").hasRole("ADMIN")
                 .anyRequest().authenticated();
         // login 후 url이동
-        http.formLogin()
-                .loginPage("/login")
-                .defaultSuccessUrl("/")//일로이동
-                .permitAll(); // 모두 허용
+        http.formLogin().disable();
+//                .loginPage("/login")
+//                .defaultSuccessUrl("/")//일로이동
+//                .permitAll(); // 모두 허용
         // logout
         http.logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -91,11 +91,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public UserDetailsService userDetailsService() {
         return username -> {
-            User user = userService.findByUsername(username);
-            if (user == null) {
+            Member member = userService.findByUsername(username);
+            if (member == null) {
                 throw new UsernameNotFoundException(username);
             }
-            return user;
+            return member;
         };
     }
 }

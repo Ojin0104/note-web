@@ -17,7 +17,7 @@ import java.util.Collections;
 @Table
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User implements UserDetails {
+public class Member implements UserDetails {
 
     @GeneratedValue
     @Id
@@ -26,7 +26,7 @@ public class User implements UserDetails {
     private String password;
     private String authority;
 
-    public User(
+    public Member(
             String username,
             String password,
             String authority

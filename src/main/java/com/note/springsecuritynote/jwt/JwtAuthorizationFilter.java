@@ -1,8 +1,10 @@
 package com.note.springsecuritynote.jwt;
 
 
-import com.note.springsecuritynote.user.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.note.springsecuritynote.user.Member;
 import com.note.springsecuritynote.user.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,15 +12,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
+
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * JWT를 이용한 인증
  */
+@Slf4j
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
@@ -35,26 +39,67 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain chain
     ) throws IOException, ServletException {
-        String token = null;
-        try {
-            // cookie 에서 JWT token을 가져옵니다.
-            token = Arrays.stream(request.getCookies())
-                    .filter(cookie -> cookie.getName().equals(JwtProperties.COOKIE_NAME)).findFirst()
-                    .map(Cookie::getValue)
-                    .orElse(null);
-        } catch (Exception ignored) {
-        }
-        if (token != null) {
+
+            // header 에서 JWT token을 가져옵니다.
+            String authorizationHeader = request.getHeader("access_token");
+
+//            token = Arrays.stream(request.getCookies())
+//                    .filter(cookie -> cookie.getName().equals(JwtProperties.COOKIE_NAME)).findFirst()
+//                    .map(Cookie::getValue)
+//                    .orElse(null);
+
+        if (authorizationHeader == null) {//&& token.startsWith("Bearer ")
+            //token=token.substring(7);
+
+                log.info("JwtAuthorizationFilter : JWT Token이 존재하지 않습니다.");
+                response.setStatus(SC_BAD_REQUEST);
+                response.setContentType(APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding("utf-8");
+                ErrorResponse errorResponse = new ErrorResponse(400, "JWT Token이 존재하지 않습니다.");
+                new ObjectMapper().writeValue(response.getWriter(), errorResponse);
+
+//                Authentication authentication = getUsernamePasswordAuthenticationToken(token);
+//                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            }else{
             try {
-                Authentication authentication = getUsernamePasswordAuthenticationToken(token);
+                // Access Token만 꺼내옴
+                String accessToken = authorizationHeader;
+//                        .substring(TOKEN_HEADER_PREFIX.length());
+
+                Authentication authentication = getUsernamePasswordAuthenticationToken(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                // === Access Token 검증 === //
+//                JWTVerifier verifier = JWT.require(Algorithm.HMAC256(JWT_SECRET)).build();
+//                DecodedJWT decodedJWT = verifier.verify(accessToken);
+//
+//                // === Access Token 내 Claim에서 Authorities 꺼내 Authentication 객체 생성 & SecurityContext에 저장 === //
+//                List<String> strAuthorities = decodedJWT.getClaim("roles").asList(String.class);
+//                List<SimpleGrantedAuthority> authorities = strAuthorities.stream().map(SimpleGrantedAuthority::new).toList();
+//                String username = decodedJWT.getSubject();
+//                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
+//                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+                chain.doFilter(request, response);
+//            } catch (TokenExpiredException e) {
+//                log.info("CustomAuthorizationFilter : Access Token이 만료되었습니다.");
+//                response.setStatus(SC_UNAUTHORIZED);
+//                response.setContentType(APPLICATION_JSON_VALUE);
+//                response.setCharacterEncoding("utf-8");
+//                ErrorResponse errorResponse = new ErrorResponse(401, "Access Token이 만료되었습니다.");
+//                new ObjectMapper().writeValue(response.getWriter(), errorResponse);
             } catch (Exception e) {
-                Cookie cookie = new Cookie(JwtProperties.COOKIE_NAME, null);
-                cookie.setMaxAge(0);
-                response.addCookie(cookie);
+                log.info("CustomAuthorizationFilter : JWT 토큰이 잘못되었습니다. message : {}", e.getMessage());
+                response.setStatus(SC_BAD_REQUEST);
+                response.setContentType(APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding("utf-8");
+                ErrorResponse errorResponse = new ErrorResponse(400, "잘못된 JWT Token 입니다.");
+                new ObjectMapper().writeValue(response.getWriter(), errorResponse);
             }
+
         }
-        chain.doFilter(request, response);
+        //chain.doFilter(request, response);
     }
 
     /**
@@ -64,11 +109,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private Authentication getUsernamePasswordAuthenticationToken(String token) {
         String userName = JwtUtils.getUsername(token);
         if (userName != null) {
-            User user = userRepository.findByUsername(userName); // 유저를 유저명으로 찾습니다.
+            Member member = userRepository.findByUsername(userName); // 유저를 유저명으로 찾습니다.
             return new UsernamePasswordAuthenticationToken(
-                    user, // principal
+                    member, // principal
                     null,
-                    user.getAuthorities()
+                    member.getAuthorities()
             );
         }
         return null; // 유저가 없으면 NULL

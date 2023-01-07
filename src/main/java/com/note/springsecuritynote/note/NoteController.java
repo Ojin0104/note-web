@@ -1,6 +1,6 @@
 package com.note.springsecuritynote.note;
 
-import com.note.springsecuritynote.user.User;
+import com.note.springsecuritynote.user.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -23,8 +23,8 @@ public class NoteController {
      */
     @GetMapping
     public String getNote(Authentication authentication, Model model) {
-        User user = (User) authentication.getPrincipal();
-        List<Note> notes = noteService.findByUser(user);
+        Member member = (Member) authentication.getPrincipal();
+        List<Note> notes = noteService.findByMember(member);
         // note/index.html 에서 notes 사용가능
         model.addAttribute("notes", notes);//(notes)에 notes값 넣어줌
         // note/index.html 제공
@@ -36,8 +36,8 @@ public class NoteController {
      */
     @PostMapping
     public String saveNote(Authentication authentication, @ModelAttribute NoteRegisterDto noteDto) {
-        User user = (User) authentication.getPrincipal();
-        noteService.saveNote(user, noteDto.getTitle(), noteDto.getContent());
+        Member member = (Member) authentication.getPrincipal();
+        noteService.saveNote(member, noteDto.getTitle(), noteDto.getContent());
         return "redirect:note";
     }
 
@@ -46,8 +46,8 @@ public class NoteController {
      */
     @DeleteMapping
     public String deleteNote(Authentication authentication, @RequestParam Long id) {
-        User user = (User) authentication.getPrincipal();
-        noteService.deleteNote(user, id);
+        Member member = (Member) authentication.getPrincipal();
+        noteService.deleteNote(member, id);
         return "redirect:note";
     }
 }

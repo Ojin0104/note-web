@@ -1,6 +1,6 @@
 package com.note.springsecuritynote.note;
 
-import com.note.springsecuritynote.user.User;
+import com.note.springsecuritynote.user.Member;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +38,7 @@ public class Note {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    private User user;
+    private Member member;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -48,11 +48,11 @@ public class Note {
     public Note(
             String title,
             String content,
-            User user
+            Member member
     ) {
         this.title = title;
         this.content = content;
-        this.user = user;
+        this.member = member;
     }
 
     public void updateContent(

@@ -2,7 +2,7 @@ package com.note.springsecuritynote.admin;
 
 import com.note.springsecuritynote.note.Note;
 import com.note.springsecuritynote.note.NoteService;
-import com.note.springsecuritynote.user.User;
+import com.note.springsecuritynote.user.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -26,8 +26,8 @@ public class AdminController {
      */
     @GetMapping
     public String getNoteForAdmin(Authentication authentication, Model model) {
-        User user = (User) authentication.getPrincipal();
-        List<Note> notes = noteService.findByUser(user);
+        Member member = (Member) authentication.getPrincipal();
+        List<Note> notes = noteService.findByMember(member);
         model.addAttribute("notes", notes);
         return "admin/index";
     }

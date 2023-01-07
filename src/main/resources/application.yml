@@ -9,8 +9,15 @@ spring:
     hiddenmethod:
       filter:
         enabled: true
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+
+
 # session
 server:
   servlet:
     session:
       timeout: 10m # 기본이 30분이고 최소는 1분입니다.
+

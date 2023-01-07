@@ -2,7 +2,8 @@ package com.note.springsecuritynote.jwt;
 
 
 
-import com.note.springsecuritynote.user.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.note.springsecuritynote.user.Member;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -10,11 +11,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * JWT를 이용한 로그인 인증
@@ -56,14 +57,26 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             FilterChain chain,
             Authentication authResult
     ) throws IOException {
-        User user = (User) authResult.getPrincipal();
-        String token = JwtUtils.createToken(user);
+        Member member = (Member) authResult.getPrincipal();
+        //String token= JwtUtils.createToken(user);
+        Map<String,String> token = JwtUtils.createTokenSet(member);
         // 쿠키 생성
-        Cookie cookie = new Cookie(JwtProperties.COOKIE_NAME, token);
-        cookie.setMaxAge(JwtProperties.EXPIRATION_TIME); // 쿠키의 만료시간 설정
-        cookie.setPath("/");
-        response.addCookie(cookie);
-        response.sendRedirect("/");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+        response.setHeader("access_token", token.get("accessToken"));
+        response.setHeader("refresh_token", token.get("refreshToken"));
+       // response.setContentType(JwtProperties.COOKIE_NAME);
+       // new ObjectMapper().writeValue(response.getWriter(),token);
+//        Cookie cookie = new Cookie(JwtProperties.COOKIE_NAME, token.toString());
+//        cookie.setMaxAge(JwtProperties.EXPIRATION_TIME); // 쿠키의 만료시간 설정
+//        cookie.setPath("/");
+      //  response.addCookie(cookie);
+
+
+
+      // new ObjectMapper().writeValue(response.getWriter(), token);
+       response.sendRedirect("/");
+
     }
 
     @Override
@@ -72,6 +85,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             HttpServletResponse response,
             AuthenticationException failed
     ) throws IOException {
+
         response.sendRedirect("/login");
     }
 }
